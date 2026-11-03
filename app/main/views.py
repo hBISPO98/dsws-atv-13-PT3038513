@@ -47,8 +47,14 @@ def index():
 def delete_user(id):
     user = User.query.get_or_404(id)
     username_deleted = user.username
+
+    # Se o usuário excluído for o mesmo que está ativo na sessão, limpa a saudação
+    if session.get('name') == username_deleted:
+        session.pop('name', None)
+
     db.session.delete(user)
     db.session.commit()
+
     # Adição 'f' antes das aspas para a variável funcionar dentro da string
     flash(f'Usuário "{username_deleted}" excluído com sucesso!', 'success')
     return redirect(url_for('main.index'))
