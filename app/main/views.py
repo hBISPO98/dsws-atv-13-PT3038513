@@ -57,9 +57,16 @@ def delete_user(id):
 @main.route('/edit/<int:id>', methods=['POST'])
 def edit_user(id):
     user = User.query.get_or_404(id)
+    old_name = user.username  # Guarda o nome antigo se precisar
     new_name = request.form.get('username')
+
     if new_name:
+        # Se o utilizador que está a ser editado for o mesmo que está logado na sessão, atualiza a sessão também
+        if session.get('name') == user.username:
+            session['name'] = new_name
+
         user.username = new_name
         db.session.commit()
         flash(f'Usuário "{new_name}" atualizado com sucesso!', 'success')
+
     return redirect(url_for('main.index'))
