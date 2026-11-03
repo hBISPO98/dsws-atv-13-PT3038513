@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky - Cadastro{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Olá, {% if name %}{{ name }}{% else %}Visitante{% endif %}!</h1>
+
+    {% if not known %}
+        <p>Prazer em te conhecer!</p>
+        <p>E-mail enviado para o <strong>Administrador do sistema</strong>, 
+           notificando o cadastro de um novo usuário.</p>
+    {% else %}
+        <p>Que bom te ver novamente!</p>
+    {% endif %}
+</div>
+
+<!-- Renderiza o formulário contendo o campo de Nome e o campo de E-mail -->
+{{ wtf.quick_form(form) }}
+
+<hr>
+
+<!-- Seção para exibir a listagem dos usuários salvos no banco de dados -->
+<h3>Relação de usuários cadastrados</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome do usuário</th>
+            <th>Função</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>
+                <!-- Modo Visualização: Mostra o nome e o botão Editar -->
+                <div id="view-mode-{{ u.id }}">
+                    <span>{{ u.username }}</span>
+                    <button type="button" class="btn btn-xs btn-default" 
+                            onclick="toggleEdit('{{ u.id }}')">
+                        Editar
+                    </button>
+                </div>
+
+                <!-- Modo Edição: Oculto inicialmente, exibe o input, Salvar e Cancelar -->
+                <div id="edit-mode-{{ u.id }}" style="display: none;">
+                    <form action="{{ url_for('main.edit_user', id=u.id) }}" 
+                          method="POST" style="display:inline;">
+                        <input type="text" name="username" 
+                               value="{{ u.username }}" required 
+                               class="form-control input-sm" 
+                               style="display:inline-block; width:auto;">
+                        <button type="submit" class="btn btn-xs btn-primary">Salvar</button>
+                        <button type="button" class="btn btn-xs btn-default" 
+                                onclick="toggleEdit('{{ u.id }}')">
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
+            </td>
+            <td>{% if u.role %}{{ u.role.name }}{% else %}User{% endif %}</td>
+            <td>
+                <!-- Botão de exclusão com confirmação em JavaScript -->
+                <a href="{{ url_for('main.delete_user', id=u.id) }}" 
+                   class="btn btn-xs btn-danger" 
+                   onclick="return confirm('Deseja realmente excluir este usuário?');">
+                   Excluir
+                </a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">Nenhum usuário cadastrado ainda.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Script simples para alternar entre Editar e Salvar/Cancelar -->
+<script>
+function toggleEdit(id) {
+    var viewMode = document.getElementById('view-mode-' + id);
+    var editMode = document.getElementById('edit-mode-' + id);
+    if (viewMode.style.display === 'none') {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    } else {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}
